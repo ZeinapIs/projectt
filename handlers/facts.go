@@ -99,8 +99,6 @@ func markRecipeStatus(c *fiber.Ctx, status string) error {
 	return c.JSON(recipe)
 }
 
-// ...
-
 func getRecipesByStatus(c *fiber.Ctx, status string) error {
 	// Implement the logic to fetch recipes by status from the database (similar to getBooksByStatus)
 	var recipes []models.Recipe
@@ -127,12 +125,51 @@ func MarkAsNotTried(c *fiber.Ctx) error {
 func GetNotTriedRecipesList(c *fiber.Ctx) error {
 	return getRecipesByStatus(c, "not tried")
 }
+func UpdateRecipe(c *fiber.Ctx) error {
+	// Get recipeID from params
+	recipeID := c.Params("recipeID")
+
+	// Retrieve the recipe from the database
+	var existingRecipe models.Recipe
+	result := database.DB.Db.First(&existingRecipe, recipeID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
+	}
+
+	// Read the request body
+	bodyBytes := c.Body()
+
+	// Unmarshal the request body into the Recipe struct
+	var updatedRecipe models.Recipe
+	if err := json.Unmarshal(bodyBytes, &updatedRecipe); err != nil {
+		fmt.Println("Error unmarshalling request body:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+	}
+
+	// Update the existing recipe with the new details
+	existingRecipe.Title = updatedRecipe.Title
+	existingRecipe.Ingredients = updatedRecipe.Ingredients
+	existingRecipe.Instructions = updatedRecipe.Instructions
+
+	// Save the updated recipe to the database
+	database.DB.Db.Save(&existingRecipe)
+
+	// Return the updated recipe
+	return c.JSON(existingRecipe)
+}
 
 // SearchRecipesByIngredients searches for recipes based on ingredients
+// SearchRecipesByIngredients searches for recipes based on a partial match of ingredients
 func SearchRecipesByIngredients(c *fiber.Ctx) error {
-	query := c.Query("q")
+	// Get the partial ingredient from the URL parameter
+	partialIngredient := c.Params("partialIngredient")
+
+	// Construct the query for a partial match
+	query := "%" + partialIngredient + "%"
+
+	// Fetch recipes from the database with a partial ingredient match
 	var searchResults []models.Recipe
-	result := database.DB.Db.Where("Ingredients ILIKE ?", "%"+query+"%").Find(&searchResults)
+	result := database.DB.Db.Where("Ingredients ILIKE ?", query).Find(&searchResults)
 
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
@@ -141,11 +178,17 @@ func SearchRecipesByIngredients(c *fiber.Ctx) error {
 	return c.JSON(searchResults)
 }
 
-// SearchRecipesByInstructions searches for recipes based on instructions
+// SearchRecipesByInstructions searches for recipes based on a partial match of instructions
 func SearchRecipesByInstructions(c *fiber.Ctx) error {
-	query := c.Query("q")
+	// Get the partial instruction from the URL parameter
+	partialInstruction := c.Params("partialInstruction")
+
+	// Construct the query for a partial match
+	query := "%" + partialInstruction + "%"
+
+	// Fetch recipes from the database with a partial instruction match
 	var searchResults []models.Recipe
-	result := database.DB.Db.Where("Instructions ILIKE ?", "%"+query+"%").Find(&searchResults)
+	result := database.DB.Db.Where("Instructions ILIKE ?", query).Find(&searchResults)
 
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
@@ -154,11 +197,17 @@ func SearchRecipesByInstructions(c *fiber.Ctx) error {
 	return c.JSON(searchResults)
 }
 
-// SearchRecipesByTitle searches for recipes based on title
+// SearchRecipesByTitle searches for recipes based on a partial match of the title
 func SearchRecipesByTitle(c *fiber.Ctx) error {
-	query := c.Query("q")
+	// Get the partial title from the URL parameter
+	partialTitle := c.Params("partialTitle")
+
+	// Construct the query for a partial match
+	query := "%" + partialTitle + "%"
+
+	// Fetch recipes from the database with a partial title match
 	var searchResults []models.Recipe
-	result := database.DB.Db.Where("Title ILIKE ?", "%"+query+"%").Find(&searchResults)
+	result := database.DB.Db.Where("Title ILIKE ?", query).Find(&searchResults)
 
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
@@ -166,6 +215,7 @@ func SearchRecipesByTitle(c *fiber.Ctx) error {
 
 	return c.JSON(searchResults)
 }
+
 func DeleteRecipe(c *fiber.Ctx) error {
 	// Get recipeID from params
 	recipeID := c.Params("recipeID")

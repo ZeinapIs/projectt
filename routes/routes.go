@@ -29,12 +29,14 @@ func SetupRoutes(app *fiber.App) {
 	// GetNotTriedRecipesList
 	app.Get("/api/not-tried-recipes", handlers.GetNotTriedRecipesList)
 
-	// SearchRecipesByIngredients
-	app.Get("/api/recipes/search-by-ingredients", handlers.SearchRecipesByIngredients)
+	// Search by ingredients
+	app.Get("/api/recipes/ingr/:partialIngredient", handlers.SearchRecipesByIngredients)
 
-	// SearchRecipesByInstructions
-	app.Get("/api/recipes/search-by-instructions", handlers.SearchRecipesByInstructions)
-	// SearchRecipesByTitle
-	app.Get("/api/recipes/search-by-title", handlers.SearchRecipesByTitle)
+	// Search by instructions
+	app.Get("/api/recipes/instr/:partialInstruction", handlers.SearchRecipesByInstructions)
+
+	app.Get("/api/recipes/title/:partialTitle", handlers.SearchRecipesByTitle)
 	app.Delete("/api/recipes/:recipeID", handlers.DeleteRecipe)
+	app.Put("/api/recipes/:recipeID", handlers.UpdateRecipe)
+	app.Patch("/api/recipes/:recipeID", handlers.UpdateRecipe)
 }
