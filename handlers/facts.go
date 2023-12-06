@@ -83,3 +83,62 @@ func getRecipesByStatus(c *fiber.Ctx, status string) error {
 	database.DB.Db.Where("status = ?", status).Find(&recipes)
 	return c.JSON(recipes)
 }
+
+// MarkAsTried marks a recipe as tried
+func MarkAsTried(c *fiber.Ctx) error {
+	return markRecipeStatus(c, "tried")
+}
+
+// GetTriedRecipesList retrieves a list of tried recipes
+func GetTriedRecipesList(c *fiber.Ctx) error {
+	return getRecipesByStatus(c, "tried")
+}
+
+// MarkAsNotTried marks a recipe as not tried
+func MarkAsNotTried(c *fiber.Ctx) error {
+	return markRecipeStatus(c, "not tried")
+}
+
+// GetNotTriedRecipesList retrieves a list of not tried recipes
+func GetNotTriedRecipesList(c *fiber.Ctx) error {
+	return getRecipesByStatus(c, "not tried")
+}
+
+// SearchRecipesByIngredients searches for recipes based on ingredients
+func SearchRecipesByIngredients(c *fiber.Ctx) error {
+	query := c.Query("q")
+	var searchResults []models.Recipe
+	result := database.DB.Db.Where("Ingredients ILIKE ?", "%"+query+"%").Find(&searchResults)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	return c.JSON(searchResults)
+}
+
+// SearchRecipesByInstructions searches for recipes based on instructions
+func SearchRecipesByInstructions(c *fiber.Ctx) error {
+	query := c.Query("q")
+	var searchResults []models.Recipe
+	result := database.DB.Db.Where("Instructions ILIKE ?", "%"+query+"%").Find(&searchResults)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	return c.JSON(searchResults)
+}
+
+// SearchRecipesByTitle searches for recipes based on title
+func SearchRecipesByTitle(c *fiber.Ctx) error {
+	query := c.Query("q")
+	var searchResults []models.Recipe
+	result := database.DB.Db.Where("Title ILIKE ?", "%"+query+"%").Find(&searchResults)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	return c.JSON(searchResults)
+}
