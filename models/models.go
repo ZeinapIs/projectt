@@ -1,5 +1,3 @@
-//models/models.go
-
 package models
 
 import "gorm.io/gorm"
