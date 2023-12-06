@@ -32,6 +32,9 @@ func GetRecipeDetails(c *fiber.Ctx) error {
 }
 
 // AddNewRecipe adds a new recipe to the database
+// handlers/recipes.go
+
+// AddNewRecipe adds a new recipe to the database
 func AddNewRecipe(c *fiber.Ctx) error {
 	var newRecipe models.Recipe
 
@@ -43,6 +46,9 @@ func AddNewRecipe(c *fiber.Ctx) error {
 		fmt.Println("Error unmarshalling request body:", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
 	}
+
+	// Set a default value for the Status field
+	newRecipe.Status = "default-status"
 
 	// Insert the new recipe into the database
 	database.DB.Db.Create(&newRecipe)
@@ -72,10 +78,28 @@ func GetFavoriteRecipesList(c *fiber.Ctx) error {
 
 // ... (other recipe-related handlers)
 
+// ...
+
 func markRecipeStatus(c *fiber.Ctx, status string) error {
-	// Implement the logic to update the recipe status (similar to markBookStatus)
-	return c.SendStatus(fiber.StatusNoContent)
+	// Get recipeID from params
+	recipeID := c.Params("recipeID")
+
+	// Retrieve the recipe from the database
+	var recipe models.Recipe
+	result := database.DB.Db.First(&recipe, recipeID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
+	}
+
+	// Update the recipe status
+	recipe.Status = status
+	database.DB.Db.Save(&recipe)
+
+	// Return the updated recipe
+	return c.JSON(recipe)
 }
+
+// ...
 
 func getRecipesByStatus(c *fiber.Ctx, status string) error {
 	// Implement the logic to fetch recipes by status from the database (similar to getBooksByStatus)
@@ -141,4 +165,21 @@ func SearchRecipesByTitle(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(searchResults)
+}
+func DeleteRecipe(c *fiber.Ctx) error {
+	// Get recipeID from params
+	recipeID := c.Params("recipeID")
+
+	// Retrieve the recipe from the database
+	var recipe models.Recipe
+	result := database.DB.Db.First(&recipe, recipeID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
+	}
+
+	// Delete the recipe from the database
+	database.DB.Db.Delete(&recipe)
+
+	// Return success message or appropriate response
+	return c.JSON(fiber.Map{"message": "Recipe deleted successfully"})
 }

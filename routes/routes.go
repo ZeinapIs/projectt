@@ -36,4 +36,5 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/api/recipes/search-by-instructions", handlers.SearchRecipesByInstructions)
 	// SearchRecipesByTitle
 	app.Get("/api/recipes/search-by-title", handlers.SearchRecipesByTitle)
+	app.Delete("/api/recipes/:recipeID", handlers.DeleteRecipe)
 }

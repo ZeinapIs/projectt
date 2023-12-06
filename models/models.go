@@ -6,8 +6,8 @@ import "gorm.io/gorm"
 
 type Recipe struct {
 	gorm.Model
-	Title        string         `json:"title"`
-	Ingredients  string         `json:"ingredients"`
-	Instructions string         `json:"instructions"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+	Title        string `json:"title"`
+	Ingredients  string `json:"ingredients"`
+	Instructions string `json:"instructions"`
+	Status       string `json:"status"` // Add this line for the Status field
 }
