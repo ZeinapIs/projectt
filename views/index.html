@@ -1,0 +1,33 @@
+<script src="/javascript/app.js"></script>
+<div>
+    <!-- Your recipe filter buttons go here -->
+
+    <div id="recipeList">
+        {{ if .Recipes }}
+            {{ range .Recipes }}
+                <div class="recipe-list-container" data-recipe-id="{{ .ID }}">
+                    <!-- Recipe details container -->
+                    <div id="recipeDetailsContainer" style="display: none">
+                        <h3><span id="recipeTitle"></span></h3>
+                        <p><span id="recipeIngredients"></span></p>
+                        <p><span id="recipeInstructions"></span></p>
+                        <p>Status: <span id="recipeStatus"></span></p>
+                        <p>ID: <span id="recipeID"></span></p>
+                        <!-- Add buttons for marking status and deleting -->
+                        <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="cooked">Mark as Cooked</button>
+                        <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="favorite">Mark as Favorite</button>
+                        <button class="delete-button" data-recipe-id="{{ .ID }}">Delete</button>
+                    </div>
+                    <p class="recipes-on-page">
+                        {{ .Title }}: {{ .Status }}
+                    </p>
+                </div>
+            {{ end }}
+        {{ else }}
+            <div>
+                <p>No recipes yet.</p>
+                <p><a href="/recipe">Add new</a></p>
+            </div>
+        {{ end }}
+    </div>
+</div>

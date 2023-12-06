@@ -11,6 +11,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// IndexView renders the main page with a list of recipes
+func IndexView(c *fiber.Ctx) error {
+	return c.Render("index", fiber.Map{
+		"Title": "Recipe Book",
+	})
+}
+
 // GetAllRecipes retrieves a list of all recipes
 func GetAllRecipes(c *fiber.Ctx) error {
 	// Implement the logic to fetch all recipes from the database
@@ -31,8 +38,12 @@ func GetRecipeDetails(c *fiber.Ctx) error {
 	return c.JSON(recipe)
 }
 
-// AddNewRecipe adds a new recipe to the database
-// handlers/recipes.go
+// AddNewRecipeView renders the page to add a new recipe
+func AddNewRecipeView(c *fiber.Ctx) error {
+	return c.Render("add", fiber.Map{
+		"Title": "Add New Recipe",
+	})
+}
 
 // AddNewRecipe adds a new recipe to the database
 func AddNewRecipe(c *fiber.Ctx) error {
@@ -53,7 +64,42 @@ func AddNewRecipe(c *fiber.Ctx) error {
 	// Insert the new recipe into the database
 	database.DB.Db.Create(&newRecipe)
 
-	return c.JSON(newRecipe)
+	// Redirect to the main page after adding a new recipe
+	return c.Redirect("/")
+}
+
+// RecipeDetailsView renders the page with details of a specific recipe
+func RecipeDetailsView(c *fiber.Ctx) error {
+	return c.Render("details", fiber.Map{
+		"Title": "Recipe Details",
+	})
+}
+
+// MarkAsTried marks a recipe as tried
+func MarkAsTried(c *fiber.Ctx) error {
+	return markRecipeStatus(c, "tried")
+}
+
+// GetTriedRecipesList retrieves a list of tried recipes
+func GetTriedRecipesList(c *fiber.Ctx) error {
+	return getRecipesByStatus(c, "tried")
+}
+
+// MarkAsNotTried marks a recipe as not tried
+func MarkAsNotTried(c *fiber.Ctx) error {
+	return markRecipeStatus(c, "not tried")
+}
+
+// GetNotTriedRecipesList retrieves a list of not tried recipes
+func GetNotTriedRecipesList(c *fiber.Ctx) error {
+	return getRecipesByStatus(c, "not tried")
+}
+
+// MarkAsCookedView renders the confirmation page for marking a recipe as cooked
+func MarkAsCookedView(c *fiber.Ctx) error {
+	return c.Render("mark_cooked", fiber.Map{
+		"Title": "Mark Recipe as Cooked",
+	})
 }
 
 // MarkAsCooked marks a recipe as cooked
@@ -61,9 +107,23 @@ func MarkAsCooked(c *fiber.Ctx) error {
 	return markRecipeStatus(c, "cooked")
 }
 
+// MarkAsFavoriteView renders the confirmation page for marking a recipe as favorite
+func MarkAsFavoriteView(c *fiber.Ctx) error {
+	return c.Render("mark_favorite", fiber.Map{
+		"Title": "Mark Recipe as Favorite",
+	})
+}
+
 // MarkAsFavorite marks a recipe as a favorite
 func MarkAsFavorite(c *fiber.Ctx) error {
 	return markRecipeStatus(c, "favorite")
+}
+
+// GetCookedRecipesListView renders the page with a list of cooked recipes
+func GetCookedRecipesListView(c *fiber.Ctx) error {
+	return c.Render("cooked_recipes", fiber.Map{
+		"Title": "Cooked Recipes",
+	})
 }
 
 // GetCookedRecipesList retrieves a list of cooked recipes
@@ -71,14 +131,17 @@ func GetCookedRecipesList(c *fiber.Ctx) error {
 	return getRecipesByStatus(c, "cooked")
 }
 
+// GetFavoriteRecipesListView renders the page with a list of favorite recipes
+func GetFavoriteRecipesListView(c *fiber.Ctx) error {
+	return c.Render("favorite_recipes", fiber.Map{
+		"Title": "Favorite Recipes",
+	})
+}
+
 // GetFavoriteRecipesList retrieves a list of favorite recipes
 func GetFavoriteRecipesList(c *fiber.Ctx) error {
 	return getRecipesByStatus(c, "favorite")
 }
-
-// ... (other recipe-related handlers)
-
-// ...
 
 func markRecipeStatus(c *fiber.Ctx, status string) error {
 	// Get recipeID from params
@@ -106,24 +169,104 @@ func getRecipesByStatus(c *fiber.Ctx, status string) error {
 	return c.JSON(recipes)
 }
 
-// MarkAsTried marks a recipe as tried
-func MarkAsTried(c *fiber.Ctx) error {
-	return markRecipeStatus(c, "tried")
+// DeleteRecipeView renders the confirmation page for deleting a recipe
+func DeleteRecipeView(c *fiber.Ctx) error {
+	return c.Render("delete", fiber.Map{
+		"Title": "Delete Recipe",
+	})
+}
+func SearchRecipesByTitleView(c *fiber.Ctx) error {
+	return c.Render("search_title", fiber.Map{
+		"Title": "Search Recipes by Title",
+	})
 }
 
-// GetTriedRecipesList retrieves a list of tried recipes
-func GetTriedRecipesList(c *fiber.Ctx) error {
-	return getRecipesByStatus(c, "tried")
+// SearchRecipesByTitle searches for recipes based on a partial match of the title
+func SearchRecipesByTitle(c *fiber.Ctx) error {
+	// Get the partial title from the URL parameter
+	partialTitle := c.Params("partialTitle")
+
+	// Construct the query for a partial match
+	query := "%" + partialTitle + "%"
+
+	// Fetch recipes from the database with a partial title match
+	var searchResults []models.Recipe
+	result := database.DB.Db.Where("Title ILIKE ?", query).Find(&searchResults)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	return c.JSON(searchResults)
 }
 
-// MarkAsNotTried marks a recipe as not tried
-func MarkAsNotTried(c *fiber.Ctx) error {
-	return markRecipeStatus(c, "not tried")
+// SearchRecipesByIngredientsView renders the page for searching recipes by ingredients
+func SearchRecipesByIngredientsView(c *fiber.Ctx) error {
+	return c.Render("search_ingredients", fiber.Map{
+		"Title": "Search Recipes by Ingredients",
+	})
 }
 
-// GetNotTriedRecipesList retrieves a list of not tried recipes
-func GetNotTriedRecipesList(c *fiber.Ctx) error {
-	return getRecipesByStatus(c, "not tried")
+// SearchRecipesByIngredients searches for recipes based on a partial match of ingredients
+func SearchRecipesByIngredients(c *fiber.Ctx) error {
+	// Get the partial ingredient from the URL parameter
+	partialIngredient := c.Params("partialIngredient")
+
+	// Construct the query for a partial match
+	query := "%" + partialIngredient + "%"
+
+	// Fetch recipes from the database with a partial ingredient match
+	var searchResults []models.Recipe
+	result := database.DB.Db.Where("Ingredients ILIKE ?", query).Find(&searchResults)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	return c.JSON(searchResults)
+}
+
+// SearchRecipesByInstructionsView renders the page for searching recipes by instructions
+func SearchRecipesByInstructionsView(c *fiber.Ctx) error {
+	return c.Render("search_instructions", fiber.Map{
+		"Title": "Search Recipes by Instructions",
+	})
+}
+
+// SearchRecipesByInstructions searches for recipes based on a partial match of instructions
+func SearchRecipesByInstructions(c *fiber.Ctx) error {
+	// Get the partial instruction from the URL parameter
+	partialInstruction := c.Params("partialInstruction")
+
+	// Construct the query for a partial match
+	query := "%" + partialInstruction + "%"
+
+	// Fetch recipes from the database with a partial instruction match
+	var searchResults []models.Recipe
+	result := database.DB.Db.Where("Instructions ILIKE ?", query).Find(&searchResults)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	return c.JSON(searchResults)
+}
+func DeleteRecipe(c *fiber.Ctx) error {
+	// Get recipeID from params
+	recipeID := c.Params("recipeID")
+
+	// Retrieve the recipe from the database
+	var recipe models.Recipe
+	result := database.DB.Db.First(&recipe, recipeID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
+	}
+
+	// Delete the recipe from the database
+	database.DB.Db.Delete(&recipe)
+
+	// Redirect to the main page after deleting a recipe
+	return c.Redirect("/")
 }
 func UpdateRecipe(c *fiber.Ctx) error {
 	// Get recipeID from params
@@ -156,80 +299,4 @@ func UpdateRecipe(c *fiber.Ctx) error {
 
 	// Return the updated recipe
 	return c.JSON(existingRecipe)
-}
-
-// SearchRecipesByIngredients searches for recipes based on ingredients
-// SearchRecipesByIngredients searches for recipes based on a partial match of ingredients
-func SearchRecipesByIngredients(c *fiber.Ctx) error {
-	// Get the partial ingredient from the URL parameter
-	partialIngredient := c.Params("partialIngredient")
-
-	// Construct the query for a partial match
-	query := "%" + partialIngredient + "%"
-
-	// Fetch recipes from the database with a partial ingredient match
-	var searchResults []models.Recipe
-	result := database.DB.Db.Where("Ingredients ILIKE ?", query).Find(&searchResults)
-
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
-	}
-
-	return c.JSON(searchResults)
-}
-
-// SearchRecipesByInstructions searches for recipes based on a partial match of instructions
-func SearchRecipesByInstructions(c *fiber.Ctx) error {
-	// Get the partial instruction from the URL parameter
-	partialInstruction := c.Params("partialInstruction")
-
-	// Construct the query for a partial match
-	query := "%" + partialInstruction + "%"
-
-	// Fetch recipes from the database with a partial instruction match
-	var searchResults []models.Recipe
-	result := database.DB.Db.Where("Instructions ILIKE ?", query).Find(&searchResults)
-
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
-	}
-
-	return c.JSON(searchResults)
-}
-
-// SearchRecipesByTitle searches for recipes based on a partial match of the title
-func SearchRecipesByTitle(c *fiber.Ctx) error {
-	// Get the partial title from the URL parameter
-	partialTitle := c.Params("partialTitle")
-
-	// Construct the query for a partial match
-	query := "%" + partialTitle + "%"
-
-	// Fetch recipes from the database with a partial title match
-	var searchResults []models.Recipe
-	result := database.DB.Db.Where("Title ILIKE ?", query).Find(&searchResults)
-
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
-	}
-
-	return c.JSON(searchResults)
-}
-
-func DeleteRecipe(c *fiber.Ctx) error {
-	// Get recipeID from params
-	recipeID := c.Params("recipeID")
-
-	// Retrieve the recipe from the database
-	var recipe models.Recipe
-	result := database.DB.Db.First(&recipe, recipeID)
-	if result.Error != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
-	}
-
-	// Delete the recipe from the database
-	database.DB.Db.Delete(&recipe)
-
-	// Return success message or appropriate response
-	return c.JSON(fiber.Map{"message": "Recipe deleted successfully"})
 }
