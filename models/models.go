@@ -1,11 +1,12 @@
+// models/models.go
+
 package models
 
 import "gorm.io/gorm"
 
-type Book struct {
+type Recipe struct {
 	gorm.Model
-	Title       string `json:"title"`
-	Author      string `json:"author"`
-	Description string `json:"description"`
-	Status      string `json:"status"`
+	Title        string `json:"title"`
+	Ingredients  string `json:"ingredients"`
+	Instructions string `json:"instructions"`
 }

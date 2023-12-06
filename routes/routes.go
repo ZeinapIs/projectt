@@ -1,4 +1,5 @@
 // cmd/routes.go
+// routes.go
 
 package routes
 
@@ -8,45 +9,16 @@ import (
 )
 
 func SetupRoutes(app *fiber.App) {
-	// Get All Books
-	app.Get("/api/books", handlers.GetAllBooks)
+	// ... (other book-related routes)
 
-	// Get Book Details
-	app.Get("/api/books/:bookID", handlers.GetBookDetails)
+	// Recipe-related routes
+	app.Get("/api/recipes", handlers.GetAllRecipes)
+	app.Get("/api/recipes/:recipeID", handlers.GetRecipeDetails)
+	app.Post("/api/recipes", handlers.AddNewRecipe)
+	app.Post("/api/recipes/:recipeID/mark-as-cooked", handlers.MarkAsCooked)
+	app.Post("/api/recipes/:recipeID/mark-as-favorite", handlers.MarkAsFavorite)
+	app.Get("/api/cooked-recipes", handlers.GetCookedRecipesList)
+	app.Get("/api/favorite-recipes", handlers.GetFavoriteRecipesList)
 
-	// Mark as Currently Reading
-	app.Post("/api/books/:bookID/currently-reading", handlers.MarkAsCurrentlyReading)
-
-	// Mark as Read
-	app.Post("/api/books/:bookID/mark-as-read", handlers.MarkAsRead)
-
-	// Mark as Did Not Finish
-	app.Post("/api/books/:bookID/did-not-finish", handlers.MarkAsDidNotFinish)
-
-	// Get Currently Reading List
-	app.Get("/api/currently-reading", handlers.GetCurrentlyReadingList)
-
-	// Get Read Books List
-	app.Get("/api/read-books", handlers.GetReadBooksList)
-
-	// Get Did Not Finish List
-	app.Get("/api/did-not-finish-books", handlers.GetDidNotFinishList)
-
-	// Add New Book
-	app.Post("/api/books", handlers.AddNewBook)
-
-	// Update Book Details
-	app.Put("/api/books/:bookID", handlers.UpdateBookDetails)
-
-	// Delete Book
-	app.Delete("/api/books/:bookID", handlers.DeleteBook)
-
-	// Search Books
-	app.Get("/api/books/search", handlers.SearchBooks)
-
-	// Mark as To Be Read
-	app.Post("/api/books/:bookID/to-be-read", handlers.MarkAsToBeRead)
-
-	// Get To Be Read List
-	app.Get("/api/to-be-read", handlers.GetToBeReadList)
+	// ... (other book-related routes)
 }

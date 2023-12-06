@@ -1,139 +1,78 @@
+// handlers/recipes.go
+
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/ZeinapIs/projectt/database"
 	"github.com/ZeinapIs/projectt/models"
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetAllBooks(c *fiber.Ctx) error {
-	var books []models.Book
-	database.DB.Db.Find(&books)
-	return c.JSON(books)
+// GetAllRecipes retrieves a list of all recipes
+func GetAllRecipes(c *fiber.Ctx) error {
+	// Implement the logic to fetch all recipes from the database
+	var recipes []models.Recipe
+	database.DB.Db.Find(&recipes)
+	return c.JSON(recipes)
 }
 
-func GetBookDetails(c *fiber.Ctx) error {
-	bookID := c.Params("bookID")
-	var book models.Book
-	result := database.DB.Db.First(&book, bookID)
+// GetRecipeDetails retrieves details of a specific recipe
+func GetRecipeDetails(c *fiber.Ctx) error {
+	// Implement the logic to fetch details of a specific recipe from the database
+	recipeID := c.Params("recipeID")
+	var recipe models.Recipe
+	result := database.DB.Db.First(&recipe, recipeID)
 	if result.Error != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Book not found"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
 	}
-	return c.JSON(book)
+	return c.JSON(recipe)
 }
 
-func MarkAsCurrentlyReading(c *fiber.Ctx) error {
-	return markBookStatus(c, "currently reading")
-}
+// AddNewRecipe adds a new recipe to the database
+func AddNewRecipe(c *fiber.Ctx) error {
+	var newRecipe models.Recipe
 
-func MarkAsRead(c *fiber.Ctx) error {
-	return markBookStatus(c, "read")
-}
-
-func MarkAsDidNotFinish(c *fiber.Ctx) error {
-	return markBookStatus(c, "did not finish")
-}
-
-func MarkAsToBeRead(c *fiber.Ctx) error {
-	return markBookStatus(c, "to read")
-}
-
-func markBookStatus(c *fiber.Ctx, status string) error {
-	// Get bookID from params
-	bookID := c.Params("bookID")
-
-	// Retrieve the book from the database
-	var book models.Book
-	result := database.DB.Db.First(&book, bookID)
-	if result.Error != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Book not found"})
-	}
-
-	// Update the book status
-	book.Status = status
-	database.DB.Db.Save(&book)
-
-	// Return the updated book
-	return c.JSON(book)
-}
-
-func getBooksByStatus(c *fiber.Ctx, status string) error {
-	var books []models.Book
-	database.DB.Db.Where("status = ?", status).Find(&books)
-	return c.JSON(books)
-}
-
-func GetCurrentlyReadingList(c *fiber.Ctx) error {
-	return getBooksByStatus(c, "currently reading")
-}
-
-func GetReadBooksList(c *fiber.Ctx) error {
-	return getBooksByStatus(c, "read")
-}
-
-func GetDidNotFinishList(c *fiber.Ctx) error {
-	return getBooksByStatus(c, "did not finish")
-}
-
-func GetToBeReadList(c *fiber.Ctx) error {
-	return getBooksByStatus(c, "to read")
-}
-
-func AddNewBook(c *fiber.Ctx) error {
-	var newBook models.Book
-
-	// Read the request body
-	bodyBytes := c.Body()
-
-	// Unmarshal the request body into the Book struct
-	if err := json.Unmarshal(bodyBytes, &newBook); err != nil {
-		fmt.Println("Error unmarshalling request body:", err)
+	// Parse the request body
+	if err := c.BodyParser(&newRecipe); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
 	}
 
-	// Insert the new book into the database
-	database.DB.Db.Create(&newBook)
+	// Insert the new recipe into the database
+	database.DB.Db.Create(&newRecipe)
 
-	return c.JSON(newBook)
-}
-func UpdateBookDetails(c *fiber.Ctx) error {
-	bookID := c.Params("bookID")
-	var updatedBook models.Book
-	if err := c.BodyParser(&updatedBook); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
-	}
-
-	result := database.DB.Db.Model(&models.Book{}).Where("id = ?", bookID).Updates(&updatedBook)
-	if result.Error != nil || result.RowsAffected == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Book not found"})
-	}
-
-	c.SendStatus(fiber.StatusNoContent)
-	return c.JSON(updatedBook)
+	return c.JSON(newRecipe)
 }
 
-func DeleteBook(c *fiber.Ctx) error {
-	bookID := c.Params("bookID")
-	result := database.DB.Db.Delete(&models.Book{}, bookID)
-	if result.Error != nil || result.RowsAffected == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Book not found"})
-	}
-
-	c.SendStatus(fiber.StatusNoContent)
-	return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Book was deleted"})
+// MarkAsCooked marks a recipe as cooked
+func MarkAsCooked(c *fiber.Ctx) error {
+	return markRecipeStatus(c, "cooked")
 }
 
-func SearchBooks(c *fiber.Ctx) error {
-	query := c.Query("q")
-	var searchResults []models.Book
-	result := database.DB.Db.Where("SELECT * FROM books WHERE Title ILIKE ? OR Author ILIKE ?", "%"+query+"%", "%"+query+"%").Scan(&searchResults)
+// MarkAsFavorite marks a recipe as a favorite
+func MarkAsFavorite(c *fiber.Ctx) error {
+	return markRecipeStatus(c, "favorite")
+}
 
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
-	}
+// GetCookedRecipesList retrieves a list of cooked recipes
+func GetCookedRecipesList(c *fiber.Ctx) error {
+	return getRecipesByStatus(c, "cooked")
+}
 
-	return c.JSON(searchResults)
+// GetFavoriteRecipesList retrieves a list of favorite recipes
+func GetFavoriteRecipesList(c *fiber.Ctx) error {
+	return getRecipesByStatus(c, "favorite")
+}
+
+// ... (other recipe-related handlers)
+
+func markRecipeStatus(c *fiber.Ctx, status string) error {
+	// Implement the logic to update the recipe status (similar to markBookStatus)
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func getRecipesByStatus(c *fiber.Ctx, status string) error {
+	// Implement the logic to fetch recipes by status from the database (similar to getBooksByStatus)
+	var recipes []models.Recipe
+	database.DB.Db.Where("status = ?", status).Find(&recipes)
+	return c.JSON(recipes)
 }

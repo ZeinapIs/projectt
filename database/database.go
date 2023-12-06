@@ -1,4 +1,4 @@
-//database/database.go
+// database/database.go
 
 package database
 
@@ -32,7 +32,7 @@ func ConnectDb() {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to connect to database. \n", err)
+		log.Fatal("Failed to connect to the database. \n", err)
 		os.Exit(2)
 	}
 
@@ -40,11 +40,9 @@ func ConnectDb() {
 	db.Logger = logger.Default.LogMode(logger.Info)
 
 	log.Println("running migrations")
-	db.AutoMigrate(&models.Book{})
+	db.AutoMigrate(&models.Recipe{})
 
 	DB = Dbinstance{
-
 		Db: db,
 	}
-
 }
