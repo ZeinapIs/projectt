@@ -3,6 +3,9 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/ZeinapIs/projectt/database"
 	"github.com/ZeinapIs/projectt/models"
 	"github.com/gofiber/fiber/v2"
@@ -32,8 +35,12 @@ func GetRecipeDetails(c *fiber.Ctx) error {
 func AddNewRecipe(c *fiber.Ctx) error {
 	var newRecipe models.Recipe
 
-	// Parse the request body
-	if err := c.BodyParser(&newRecipe); err != nil {
+	// Read the request body
+	bodyBytes := c.Body()
+
+	// Unmarshal the request body into the Recipe struct
+	if err := json.Unmarshal(bodyBytes, &newRecipe); err != nil {
+		fmt.Println("Error unmarshalling request body:", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
 	}
 
