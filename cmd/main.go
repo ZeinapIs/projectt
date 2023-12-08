@@ -1,7 +1,5 @@
 // cmd/main.go
 
-// cmd/main.go
-
 package main
 
 import (
