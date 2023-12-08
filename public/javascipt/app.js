@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const clickedRecipeElement = event.target.closest('.recipe-list-container');
         if (!clickedRecipeElement) return;
 
-        const recipeID = clickedRecipeElement.dataset.recipeId;
+        const recipeID = clickedRecipeElement.dataset.recipeID;
 
         const markAsButton = event.target.closest('.mark-as-button');
         if (markAsButton) {
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
             jsonData[key] = value;
         });
     
-        fetch('/recipe', {
+        fetch('/api/recipes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

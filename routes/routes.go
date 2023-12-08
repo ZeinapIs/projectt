@@ -12,29 +12,18 @@ func SetupRoutes(app *fiber.App) {
 
 	app.Get("/", handlers.GetAllRecipes)
 	app.Get("/api/recipes/:recipeID", handlers.GetRecipeDetails)
-	app.Post("/recipe", handlers.AddNewRecipe)
-	app.Post("/api/recipes/:recipeID/mark-as-coi=oking", handlers.MarkAsCooking)
-	app.Post("/api/recipes/:recipeID/mark-as-favorite", handlers.MarkAsToCook)
-	app.Get("/api/cooked-recipes", handlers.GetCookingRecipesList)
-	app.Get("/api/to-cook-recipes", handlers.GetToCookRecipesList)
-	// MarkAsTried
+	app.Post("/api/recipes", handlers.AddNewRecipe)
+	app.Post("/api/recipes/:recipeID/mark-as-cooking", handlers.MarkAsCooking)
+	app.Post("/api/recipes/:recipeID/mark-as-cook", handlers.MarkAsToCook)
+	app.Get("/recipes/cooking", handlers.GetCookingRecipesList)
+	app.Get("/recipes/to-cook", handlers.GetToCookRecipesList)
 	app.Post("/api/recipes/:recipeID/mark-as-tried", handlers.MarkAsTried)
-	// Add the new route for fetching recipes by status
-	// Update the route for fetching recipes by status
-
-	// GetTriedRecipesList
-	app.Get("/api/tried-recipes", handlers.GetTriedRecipesList)
-
-	// MarkAsNotTried
+	app.Get("/recipes/tried", handlers.GetTriedRecipesList)
+	app.Get("/recipes/not-tried", handlers.GetNotTriedRecipesList)
 	app.Post("/api/recipes/:recipeID/mark-as-not-tried", handlers.MarkAsNotTried)
 
-	// GetNotTriedRecipesList
-	app.Get("/api/not-tried-recipes", handlers.GetNotTriedRecipesList)
-
-	// Search by ingredients
 	app.Get("/api/recipes/ingr/:partialIngredient", handlers.SearchRecipesByIngredients)
 
-	// Search by instructions
 	app.Get("/api/recipes/instr/:partialInstruction", handlers.SearchRecipesByInstructions)
 
 	app.Get("/api/recipes/title/:partialTitle", handlers.SearchRecipesByTitle)

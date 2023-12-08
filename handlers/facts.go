@@ -42,6 +42,7 @@ func NewRecipeView(c *fiber.Ctx) error {
 }
 
 // AddNewRecipe adds a new recipe to the database
+// AddNewRecipe adds a new recipe to the database
 func AddNewRecipe(c *fiber.Ctx) error {
 	var newRecipe models.Recipe
 
@@ -60,7 +61,13 @@ func AddNewRecipe(c *fiber.Ctx) error {
 	// Customize the confirmation message for recipe addition
 	title := "Recipe added successfully"
 	subtitle := "You can add more recipes to your collection"
-	return ConfirmationView(c, title, subtitle)
+	confirmation := ConfirmationView(c, title, subtitle)
+
+	// Return the created recipe details along with the confirmation message
+	return c.JSON(fiber.Map{
+		"confirmation": confirmation,
+		"recipe":       newRecipe,
+	})
 }
 
 // Assume ConfirmationView is the same for both books and recipes
