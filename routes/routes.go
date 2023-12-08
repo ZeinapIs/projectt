@@ -10,15 +10,17 @@ import (
 
 func SetupRoutes(app *fiber.App) {
 
-	app.Get("/api/recipes", handlers.GetAllRecipes)
+	app.Get("/", handlers.GetAllRecipes)
 	app.Get("/api/recipes/:recipeID", handlers.GetRecipeDetails)
-	app.Post("/api/recipes", handlers.AddNewRecipe)
-	app.Post("/api/recipes/:recipeID/mark-as-cooked", handlers.MarkAsCooked)
-	app.Post("/api/recipes/:recipeID/mark-as-favorite", handlers.MarkAsFavorite)
-	app.Get("/api/cooked-recipes", handlers.GetCookedRecipesList)
-	app.Get("/api/favorite-recipes", handlers.GetFavoriteRecipesList)
+	app.Post("/recipe", handlers.AddNewRecipe)
+	app.Post("/api/recipes/:recipeID/mark-as-coi=oking", handlers.MarkAsCooking)
+	app.Post("/api/recipes/:recipeID/mark-as-favorite", handlers.MarkAsToCook)
+	app.Get("/api/cooked-recipes", handlers.GetCookingRecipesList)
+	app.Get("/api/to-cook-recipes", handlers.GetToCookRecipesList)
 	// MarkAsTried
 	app.Post("/api/recipes/:recipeID/mark-as-tried", handlers.MarkAsTried)
+	// Add the new route for fetching recipes by status
+	// Update the route for fetching recipes by status
 
 	// GetTriedRecipesList
 	app.Get("/api/tried-recipes", handlers.GetTriedRecipesList)
@@ -38,5 +40,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/api/recipes/title/:partialTitle", handlers.SearchRecipesByTitle)
 	app.Put("/api/recipes/:recipeID", handlers.UpdateRecipe)
 	app.Patch("/api/recipes/:recipeID", handlers.UpdateRecipe)
+	app.Delete("/api/recipes/:recipeID", handlers.DeleteRecipe)
 
+	app.Get("/recipe", handlers.NewRecipeView)
 }

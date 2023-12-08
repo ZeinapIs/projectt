@@ -1,0 +1,23 @@
+<!-- views/layouts/main.html -->
+<!DOCTYPE html>
+<head>
+    <title>my recipe collection</title>
+    <link rel="stylesheet" href="style/main.css?v=1">
+    <link href='https://fonts.googleapis.com/css?family=Libre Caslon Text' rel='stylesheet'> 
+    <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.7/dist/handlebars.min.js"></script>
+    <script src="/javascript/app.js"></script>
+</head>
+<body>
+    <div class="wrapper">
+        {{template "header" .}}
+            
+        <h1>{{.Title}}</h1>
+        <h2>
+            {{.Subtitle}}
+        </h2>
+        {{embed}}
+    </div>  
+</body>
+</html>

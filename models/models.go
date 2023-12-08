@@ -9,5 +9,5 @@ type Recipe struct {
 	Title        string `json:"title"`
 	Ingredients  string `json:"ingredients"`
 	Instructions string `json:"instructions"`
-	Status       string `json:"status"` // Add this line for the Status field
+	Status       string `json:"status"`
 }

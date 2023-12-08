@@ -1,0 +1,44 @@
+<!-- views/index.html -->
+<script src="javascript/app.js"></script>
+<div>
+    <button id="fltrtbr">To Cook</button>
+    <button id="fltrcr">Cooking</button>
+    <button id="fltrread">Tried</button>
+    <button id="fltrdnf">Not Tried</button>
+
+    <div id="recipeList">
+        {{ if .Recipes }}
+        {{ range .Recipes }}
+            <div class="recipe-list-container" data-recipe-id="{{ .ID }}">
+                 <!-- recipe details container -->
+            <div id="recipeDetailsContainer" style="display: none">
+                 <h3><span id="recipeTitle"></span></h3>
+                 <p><span id="recipeIngredients"></span></p>
+                 <p><span id="recipeInstructions"></span></p>
+                 <p>Status: <span id="recipeStatus"></span></p>
+                 <p>ID: <span id="recipeID"></span></p>
+                 <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="cooking">Cooking</button>
+                 <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="tried">Tried</button>
+                 <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="not-tried">Not tried</button>
+                 <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="to-cook">To Cook</button>
+                 <button class="delete-button" data-recipe-id="{{ .ID }}">Delete</button>
+            </div>
+                <p class="recipes-on-page">
+                    {{ .Title }} 
+                    {{ .Ingredients }}
+                    {{.Instructions}}
+                    : {{ .Status }}
+                </p>
+            </div>
+        {{ end }}
+    {{ else }}
+        <div>
+            <p>No recipes yet.</p>
+            <p><a href="/recipe">Add new</a></p>
+        </div>
+    {{ end }}
+    
+    </div>
+
+
+</div>

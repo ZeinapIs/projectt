@@ -1,0 +1,29 @@
+<!-- views/new.html -->
+<form id="new-form" method="POST" action="/recipe">
+    <label for="title">
+        <span>Title</span>
+        <input id="title" type="text" name="title">
+    </label>
+
+    <label for="Ingredients">
+        <span>Ingredients</span>
+        <input id="Ingredients" type="text" name="Ingredients">
+    </label>
+
+    <label for="Instructions">
+        <span>Instructions</span>
+        <input id="Instructions" type="text" name="Instructions">
+    </label>
+
+    <label for="status">
+        <span>Status</span>
+        <select name="status" id="status">
+            <option value="to cook">to-cook</option>
+            <option value="cooking">cooking</option>
+            <option value="tried">tried</option>
+            <option value="not tried">not tried</option>
+          </select>
+    </label>
+
+    <input type="submit" value="Submit">
+</form>
