@@ -22,6 +22,6 @@ func main() {
 	routes.SetupRoutes(app)
 
 	app.Static("/", "./public")
-	// Start the Fiber app
+
 	app.Listen(":3000")
 }

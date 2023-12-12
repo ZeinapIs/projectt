@@ -1,86 +1,88 @@
-  // public/javascript/app.js
+// public/javascript/app.js
 document.addEventListener('DOMContentLoaded', function () {
+    // Initial fetch of recipes
     fetchRecipes();
 
-    const cookedBtn = document.getElementById("fltrcooked");
-    cookedBtn.addEventListener("click", () => filterRecipes('cooked'));
-
-    const cookBtn = document.getElementById("fltrcook");
-    cookBtn.addEventListener("click", () => filterRecipes('to-cook'));
-
-    const triedBtn = document.getElementById("fltrtried");
-    triedBtn.addEventListener("click", () => filterRecipes('tried'));
-
-    const notTriedBtn = document.getElementById("fltrnottried");
-    notTriedBtn.addEventListener("click", () => filterRecipes('not-tried'));
-
-    document.getElementById('recipeList').addEventListener('click', (event) => {
-        const clickedRecipeElement = event.target.closest('.recipe-list-container');
-        if (!clickedRecipeElement) return;
-
-        const recipeID = clickedRecipeElement.dataset.recipeID;
-
-        const markAsButton = event.target.closest('.mark-as-button');
-        if (markAsButton) {
-            const status = markAsButton.dataset.status;
-            updateRecipeStatus(recipeID, status);
-        }
-
-        const deleteButton = event.target.closest('.delete-button');
-        if (deleteButton) {
-            deleteRecipe(recipeID);
-        }
+    // Event listeners for filter buttons
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const status = this.getAttribute('data-status');
+            filterRecipes(status);
+        });
     });
 
-    function fetchRecipes() {
-        fetch('/api/recipes')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(recipes => {
-                const recipeListContainer = document.getElementById('recipeList');
-                recipeListContainer.innerHTML = '';
+    // Event listener for the search form
+    document.getElementById('searchForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const searchTerm = document.getElementById('searchInput').value;
+        searchRecipes(searchTerm);
+    });
+});
 
-                recipes.forEach(recipe => {
-                    const recipeElement = document.createElement('div');
-                    recipeElement.innerHTML = `
-                        <p>${recipe.title} - ${recipe.status}</p>
-                    `;
+// Fetch and display all recipes
+function fetchRecipes() {
+    fetch('/api/recipes')
+        .then(response => response.json())
+        .then(recipes => {
+            displayRecipes(recipes);
+        })
+        .catch(error => console.error('Error:', error));
+}
 
-                    recipeListContainer.appendChild(recipeElement);
-                });
-            })
-            .catch(error => console.error('Error:', error));
-    }
+// Filter recipes by status
+function filterRecipes(status) {
+    fetch(`/api/recipes/status/${status}`)
+        .then(response => response.json())
+        .then(recipes => {
+            displayRecipes(recipes);
+        })
+        .catch(error => console.error('Error:', error));
+}
 
-    function filterRecipes(status) {
-        const recipeListContainer = document.getElementById("recipeList");
+// Display recipes in the DOM
+function displayRecipes(recipes) {
+    const recipeListContainer = document.getElementById('recipeList');
+    recipeListContainer.innerHTML = ''; // Clear existing recipes
 
-        fetch(`/api/${status}-recipes`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(recipes => {
-                recipeListContainer.innerHTML = '';
+    recipes.forEach(recipe => {
+        const recipeElement = document.createElement('div');
+        recipeElement.className = 'recipe-list-container';
+        recipeElement.dataset.recipeID = recipe.id;
+        recipeElement.innerHTML = `
+            <h3>${recipe.title}</h3>
+            <p>Status: ${recipe.status}</p>
+            <p>Ingredients: ${recipe.ingredients}</p>
+            <p>Instructions: ${recipe.instructions}</p>
+        `;
+        recipeListContainer.appendChild(recipeElement);
+    });
+}
+function searchRecipes(searchTerm) {
+    console.log('Searching for:', searchTerm); 
+    fetch(`/search-recipes?term=${encodeURIComponent(searchTerm)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Search results:', data); 
+            updateRecipeList(data);
+        })
+        .catch(error => console.error('Error:', error));
+}
 
-                recipes.forEach(recipe => {
-                    const recipeElement = document.createElement('div');
-                    recipeElement.innerHTML = `
-                        <p>${recipe.title} - ${recipe.status}</p>
-                    `;
+function updateRecipeList(recipes) {
+    const recipeListContainer = document.getElementById('recipeList');
+    recipeListContainer.innerHTML = ''; // Clear previous results
+    recipes.forEach(recipe => {
+        // Adjust these according to your actual response structure
+        const recipeElement = document.createElement('div');
+        recipeElement.className = 'recipe-list-container';
+        recipeElement.dataset.recipeID = recipe.id;
+        recipeElement.innerHTML = `<p>${recipe.title} - ${recipe.status}</p>`;
+        recipeListContainer.appendChild(recipeElement);
+    });
+}
 
-                    recipeListContainer.appendChild(recipeElement);
-                });
-            })
-            .catch(error => console.error('Error:', error));
-    }
-
+   
     function updateRecipeStatus(recipeID, status) {
         fetch(`/api/recipes/${recipeID}/${status}`, { method: "POST" })
             .then(response => {
@@ -140,5 +142,23 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => console.error('Error:', error));
     });
-    
+
+document.getElementById('searchForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const searchTerm = document.getElementById('searchInput').value;
+    console.log('Searching for:', searchTerm); // Log the search term for debugging
+    fetch(`/search-recipes?term=${encodeURIComponent(searchTerm)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Search results:', data); // Log the results for debugging
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = ''; // Clear previous results
+            data.forEach(recipe => {
+                // Adjust these according to your actual response structure
+                const recipeElement = document.createElement('div');
+                recipeElement.innerHTML = `<h3>${recipe.title}</h3><p>${recipe.ingredients}</p><p>${recipe.instructions}</p>`;
+                resultsContainer.appendChild(recipeElement);
+            });
+        })
+        .catch(error => console.error('Error:', error));
 });
