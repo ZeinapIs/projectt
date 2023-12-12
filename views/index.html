@@ -1,9 +1,12 @@
 <!-- views/index.html -->
+
 <script src="javascript/app.js"></script>
 <form id="searchForm">
     <input type="text" id="searchInput" placeholder="Search for recipes...">
     <button type="submit">Search</button>
 </form>
+
+<div id="searchResults"></div> <!-- Container for search results -->
 
 <div>
     <button id="fltrtcooking" class="filter-btn" data-status="cooking">Cooking</button>
@@ -39,7 +42,7 @@
 {{ else }}
     <div>
         <p>No recipes yet.</p>
-        <p><a href="/api/recipes">Add new</a></p>
+        <p><a href="/recipe">Add new</a></p>
     </div>
 {{ end }}
 

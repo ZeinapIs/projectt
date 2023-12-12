@@ -107,21 +107,6 @@ func markRecipeStatus(c *fiber.Ctx, status string) error {
 	return c.JSON(recipe)
 }
 
-// GetRecipesByStatus retrieves recipes filtered by their status
-func GetRecipesByStatus(c *fiber.Ctx, status string) error {
-	fmt.Println("Status:", status)
-
-	var recipes []models.Recipe
-	// Use a parameterized query to prevent SQL injection
-	err := database.DB.Db.Where("status = ? AND deleted_at IS NULL", status).Order("id").Find(&recipes).Error
-	if err != nil {
-		fmt.Println("Error fetching recipes by status:", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
-	}
-
-	return c.JSON(recipes)
-}
-
 // ConfirmationView renders a confirmation view with a custom message
 func ConfirmationView(c *fiber.Ctx, title, subtitle string) error {
 	return c.Render("confirmation", fiber.Map{
@@ -164,42 +149,61 @@ func SearchRecipesByTitle(c *fiber.Ctx) error {
 
 }
 func GetCookingRecipes(c *fiber.Ctx) error {
-	return GetRecipesByStatus(c, "cooking")
+	return getRecipesByStatusHelper(c, "cooking")
 }
 
 func GetToCookRecipes(c *fiber.Ctx) error {
-	return GetRecipesByStatus(c, "to-cook")
+	return getRecipesByStatusHelper(c, "to-cook")
 }
 
 func GetTriedRecipes(c *fiber.Ctx) error {
-	return GetRecipesByStatus(c, "tried")
+	return getRecipesByStatusHelper(c, "tried")
 }
 
 func GetNotTriedRecipes(c *fiber.Ctx) error {
-	return GetRecipesByStatus(c, "not-tried")
+	return getRecipesByStatusHelper(c, "not-tried")
 }
 
-// SearchRecipesByIngredients searches for recipes based on a partial match of ingredients
-func SearchRecipesByIngredients(c *fiber.Ctx) error {
-	return SearchRecipesByIngredient(c)
-}
-
-// SearchRecipesByInstructions searches for recipes based on a partial match of instructions
-func SearchRecipesByInstructions(c *fiber.Ctx) error {
-	return SearchRecipesByInstruction(c)
-}
-func SearchRecipes(c *fiber.Ctx) error {
-	searchTerm := c.Query("term")
+func getRecipesByStatusHelper(c *fiber.Ctx, status string) error {
 	var recipes []models.Recipe
-	// Use a GORM query that searches for the searchTerm in the recipe fields
-	err := database.DB.Db.Where("title ILIKE ? OR ingredients ILIKE ? OR instructions ILIKE ?", "%"+searchTerm+"%", "%"+searchTerm+"%", "%"+searchTerm+"%").Find(&recipes).Error
+	err := database.DB.Db.Where("status = ?", status).Find(&recipes).Error
 	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Internal Server Error",
+		})
+	}
+
+	return c.JSON(recipes)
+}
+
+func SearchRecipes(c *fiber.Ctx) error {
+	// Get the search term from the query string
+	searchTerm := c.Query("query")
+
+	// Construct the query for a partial match
+	query := "%" + searchTerm + "%"
+
+	// Fetch recipes from the database with a partial match
+	var searchResults []models.Recipe
+	result := database.DB.Db.Where("Title ILIKE ? OR Ingredients ILIKE ? OR Instructions ILIKE ?", query, query, query).Find(&searchResults)
+
+	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
 	}
-	// Convert to RecipeResponse if needed
-	var responseRecipes []models.RecipeResponse
-	for _, recipe := range recipes {
-		responseRecipes = append(responseRecipes, models.CreateRecipeResponse(recipe))
+
+	return c.JSON(searchResults)
+}
+
+func GetRecipesByStatus(c *fiber.Ctx) error {
+	status := c.Params("status")
+
+	var recipes []models.Recipe
+	err := database.DB.Db.Where("status = ?", status).Find(&recipes).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Internal Server Error",
+		})
 	}
-	return c.JSON(responseRecipes)
+
+	return c.JSON(recipes)
 }
