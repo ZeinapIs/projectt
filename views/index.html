@@ -1,51 +1,54 @@
 <!-- views/index.html -->
 
+<link rel="stylesheet" type="text/css" href="style/main.css"> <!-- Include your CSS file -->
+
 <script src="javascript/app.js"></script>
 <form id="searchForm">
     <input type="text" id="searchInput" placeholder="Search for recipes...">
+    <select id="searchType">
+        <option value="title">By Title</option>
+        <option value="ingr">By Ingredient</option>
+        <option value="instr">By Instruction</option>
+    </select>
     <button type="submit">Search</button>
 </form>
-
 <div id="searchResults"></div> <!-- Container for search results -->
 
 <div>
-    <button id="fltrtcooking" class="filter-btn" data-status="cooking">Cooking</button>
-    <button id="fltrtried" class="filter-btn" data-status="tried">Tried</button>
-    <button id="fltrnotTried" class="filter-btn" data-status="not-tried">Not Tried</button>
-    <button id="fltrtoCook" class="filter-btn" data-status="to-cook">To Cook</button>
+    <a href="/cooking" class="filter-link">Cooking</a>
+    <a href="/to-cook" class="filter-link">To Cook</a>
+    <a href="/tried" class="filter-link">Tried</a>
+    <a href="/not-tried" class="filter-link">Not Tried</a>
 </div>
+<div id="recipeList" class="recipe-list">
+    <!-- Recipes will be loaded here -->
+</div>
+<!-- Replace the button with a link -->
+<a href="/delete-recipe" class="delete-link">Delete a Recipe</a>
+
 <div id="recipeList">
     {{ if .Recipes }}
     {{ range .Recipes }}
         <div class="recipe-list-container" data-recipe-id="{{ .ID }}">
-             <!-- recipe details container -->
-        <div id="recipeDetailsContainer" style="display: none">
-             <h3><span id="recipeTitle"></span></h3>
-             <p><span id="recipeIngredients"></span></p>
-             <p><span id="recipeInstructions"></span></p>
-             <p>Status: <span id="recipeStatus"></span></p>
-             <p>ID: <span id="recipeID"></span></p>
-             <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="cooking">Cooking</button>
-             <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="tried">Tried</button>
-             <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="not-tried">Not tried</button>
-             <button class="mark-as-button" data-recipe-id="{{ .ID }}" data-status="to-cook">To Cook</button>
-             <button class="delete-button" data-recipe-id="{{ .ID }}">Delete</button>
-        </div>
-            <p class="recipes-on-page">
-                {{ .Title }} 
-                {{ .Ingredients }}
-                {{.Instructions}}
-                : {{ .Status }}
-            </p>
+            <!-- Recipe details -->
+            <h3>{{ .Title }}</h3>
+            <p>Ingredients: {{ .Ingredients }}</p>
+            <p>Instructions: {{ .Instructions }}</p>
+            <p>Status: {{ .Status }}</p>
+            <!-- Action links -->
+            <a href="#" class="update-recipe-link" data-recipe-id="{{ .ID }}" data-status="cooking">Cooking</a>
+            <a href="#" class="update-recipe-link" data-recipe-id="{{ .ID }}" data-status="tried">Tried</a>
+            <a href="#" class="update-recipe-link" data-recipe-id="{{ .ID }}" data-status="not-tried">Not Tried</a>
+            <a href="#" class="update-recipe-link" data-recipe-id="{{ .ID }}" data-status="to-cook">To Cook</a>
+            <!-- New delete and update buttons -->
+        
+            <button class="update-button" data-recipeid="{{ .ID }}">Update</button>
         </div>
     {{ end }}
-{{ else }}
+    {{ else }}
     <div>
         <p>No recipes yet.</p>
         <p><a href="/recipe">Add new</a></p>
     </div>
-{{ end }}
-
-</div>
-
+    {{ end }}
 </div>

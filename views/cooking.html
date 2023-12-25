@@ -1,0 +1,20 @@
+<!-- views/cooking.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cooking Recipes</title>
+    <!-- Include CSS and JavaScript files if needed -->
+</head>
+<body>
+    <h1>Cooking Recipes</h1>
+    
+    <ul>
+        {{ range .Recipes }}
+        <li>{{ .Title }}</li>
+        <p><strong>Ingredients:</strong> {{ .Ingredients }}</p>
+        <p><strong>Instructions:</strong> {{ .Instructions }}</p>
+        <p><strong>Status:</strong> {{ .Status }}</p>
+        {{ end }}
+    </ul>
+</body>
+</html>

@@ -82,3 +82,24 @@ a {
 a:hover {
     color: #553405; 
 }
+.filter-link {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #c19477; /* Blue color, you can change this */
+  color: #fff; /* White text color */
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+/* Add styles to the recipe list */
+.recipe-list {
+  margin-top: 20px;
+}
+
+.recipe-list-container {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+}

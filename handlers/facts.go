@@ -50,16 +50,19 @@ func AddNewRecipe(c *fiber.Ctx) error {
 }
 
 // UpdateRecipe updates an existing recipe's details
-func UpdateRecipe(c *fiber.Ctx) error {
-	recipeID := c.Params("recipeID")
+func UpdateRecipeDetails(c *fiber.Ctx) error {
+	recipeID := c.Params("recipeID ")
 	var updatedRecipe models.Recipe
 	if err := c.BodyParser(&updatedRecipe); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
 	}
+
 	result := database.DB.Db.Model(&models.Recipe{}).Where("id = ?", recipeID).Updates(&updatedRecipe)
 	if result.Error != nil || result.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
 	}
+
+	c.SendStatus(fiber.StatusNoContent)
 	return c.JSON(updatedRecipe)
 }
 
@@ -70,7 +73,11 @@ func DeleteRecipe(c *fiber.Ctx) error {
 	if result.Error != nil || result.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
 	}
-	return ConfirmationView(c, "Recipe deleted successfully", "You can manage your recipe collection")
+
+	// Customize the confirmation message for book deletion
+	title := "Recipe deleted successfully"
+	subtitle := "You can manage your collection"
+	return ConfirmationView(c, title, subtitle)
 }
 
 // MarkAsCooking updates the status of a recipe to 'cooking'
@@ -148,34 +155,76 @@ func SearchRecipesByTitle(c *fiber.Ctx) error {
 	return c.JSON(recipes)
 
 }
-func GetCookingRecipes(c *fiber.Ctx) error {
-	return getRecipesByStatusHelper(c, "cooking")
-}
-
 func GetToCookRecipes(c *fiber.Ctx) error {
-	return getRecipesByStatusHelper(c, "to-cook")
+	var recipes []models.Recipe
+
+	// Fetch recipes with status "to-cook" from your database
+	sql := "SELECT * FROM recipes WHERE status = $1 AND deleted_at IS NULL ORDER BY id"
+	err := database.DB.Db.Raw(sql, "to-cook").Find(&recipes).Error
+
+	if err != nil {
+		fmt.Println("Error fetching to-cook recipes:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	// Pass the recipes to the to-cook.html template
+	return c.Render("to-cook", fiber.Map{
+		"Recipes": recipes,
+	})
+}
+func GetCookingRecipes(c *fiber.Ctx) error {
+	var recipes []models.Recipe
+
+	// Fetch recipes with status "cooking" from your database
+	sql := "SELECT * FROM recipes WHERE status = $1 AND deleted_at IS NULL ORDER BY id"
+	err := database.DB.Db.Raw(sql, "cooking").Find(&recipes).Error
+
+	if err != nil {
+		fmt.Println("Error fetching cooking recipes:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	// Pass the recipes to the cooking.html template
+	return c.Render("cooking", fiber.Map{
+		"Recipes": recipes,
+	})
 }
 
 func GetTriedRecipes(c *fiber.Ctx) error {
-	return getRecipesByStatusHelper(c, "tried")
+	var recipes []models.Recipe
+
+	// Fetch recipes with status "tried" from your database
+	sql := "SELECT * FROM recipes WHERE status = $1 AND deleted_at IS NULL ORDER BY id"
+	err := database.DB.Db.Raw(sql, "tried").Find(&recipes).Error
+
+	if err != nil {
+		fmt.Println("Error fetching tried recipes:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	}
+
+	// Pass the recipes to the tried.html template
+	return c.Render("tried", fiber.Map{
+		"Recipes": recipes,
+	})
 }
 
 func GetNotTriedRecipes(c *fiber.Ctx) error {
-	return getRecipesByStatusHelper(c, "not-tried")
-}
-
-func getRecipesByStatusHelper(c *fiber.Ctx, status string) error {
 	var recipes []models.Recipe
-	err := database.DB.Db.Where("status = ?", status).Find(&recipes).Error
+
+	// Fetch recipes with status "not-tried" from your database
+	sql := "SELECT * FROM recipes WHERE status = $1 AND deleted_at IS NULL ORDER BY id"
+	err := database.DB.Db.Raw(sql, "not-tried").Find(&recipes).Error
+
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Internal Server Error",
-		})
+		fmt.Println("Error fetching not-tried recipes:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
 	}
 
-	return c.JSON(recipes)
+	// Pass the recipes to the not-tried.html template
+	return c.Render("not-tried", fiber.Map{
+		"Recipes": recipes,
+	})
 }
-
 func SearchRecipes(c *fiber.Ctx) error {
 	// Get the search term from the query string
 	searchTerm := c.Query("query")
@@ -193,16 +242,29 @@ func SearchRecipes(c *fiber.Ctx) error {
 
 	return c.JSON(searchResults)
 }
+func GetAllRecipesAsJSON(c *fiber.Ctx) error {
+	fmt.Println("Fetching all recipes for JSON")
+	var recipes []models.Recipe
+	if err := database.DB.Db.Find(&recipes).Error; err != nil {
+		fmt.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Unable to fetch recipes"})
+	}
+	return c.JSON(recipes)
+}
 
-func GetRecipesByStatus(c *fiber.Ctx) error {
-	status := c.Params("status")
+func GetRecipesByStatus(c *fiber.Ctx, status string) error {
+	fmt.Println("Status:", status)
 
 	var recipes []models.Recipe
-	err := database.DB.Db.Where("status = ?", status).Find(&recipes).Error
+
+	// Construct the SQL query dynamically using the status parameter
+	sql := "SELECT * FROM recipes WHERE status = '" + status + "' AND deleted_at IS NULL ORDER BY id"
+
+	// Execute the dynamically constructed SQL query
+	err := database.DB.Db.Raw(sql).Find(&recipes).Error
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Internal Server Error",
-		})
+		fmt.Println("Error fetching recipes by status:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
 	}
 
 	return c.JSON(recipes)

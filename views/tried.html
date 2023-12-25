@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tried Recipes</title>
+</head>
+<body>
+    <h1>Tried Recipes</h1>
+    <ul>
+        {{ range .Recipes }}
+        <li>
+            <h2>{{ .Title }}</h2>
+            <p><strong>Ingredients:</strong> {{ .Ingredients }}</p>
+            <p><strong>Instructions:</strong> {{ .Instructions }}</p>
+            <p><strong>Status:</strong> {{ .Status }}</p>
+        </li>
+        {{ end }}
+    </ul>
+</body>
+</html>
