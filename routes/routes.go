@@ -11,7 +11,7 @@ import (
 func SetupRoutes(app *fiber.App) {
 
 	app.Get("/", handlers.GetAllRecipes)
-	app.Get("/api/recipes/:recipeID", handlers.GetRecipeDetails)
+	app.Get("/recipe/:recipeID", handlers.GetRecipeDetails)
 	app.Post("/recipe", handlers.AddNewRecipe)
 	app.Post("/api/recipes/:recipeID/cooking", handlers.MarkAsCooking)
 	app.Post("/api/recipes/:recipeID/cook", handlers.MarkAsToCook)
@@ -29,9 +29,9 @@ func SetupRoutes(app *fiber.App) {
 
 	app.Get("/api/recipes/title/:partialTitle", handlers.SearchRecipesByTitle)
 	app.Get("/api/recipes/search/:searchTerm", handlers.SearchRecipes)
+	app.Get("/recipe/:id/edit", handlers.EditRecipe)
 
-	app.Put("/api/recipes/:recipeID", handlers.UpdateRecipeDetails)
-
+	app.Patch("/recipe/:recipeID", handlers.UpdateRecipeDetails)
 	app.Delete("/api/recipes/:recipeID", handlers.DeleteRecipe)
 
 	app.Get("/delete-recipe", func(c *fiber.Ctx) error {

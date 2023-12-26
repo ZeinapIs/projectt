@@ -1,18 +1,48 @@
-
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/api/recipes') // Adjusted endpoint
-        .then(response => response.json())
-        .then(recipes => {
-            const selectElement = document.getElementById('recipe-select');
-            recipes.forEach(recipe => {
-                const option = new Option(recipe.title, recipe.ID); // Adjust to match your Recipe model
-                selectElement.add(option);
-            });
+// Создаем функцию для отправки GET-запроса на серверное API
+function checkAPI() {
+    fetch('/api/recipes')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json(); // Преобразуем ответ в JSON
+        })
+        .then(data => {
+            // Проверяем данные на наличие свойств title и ID для каждого рецепта
+            if (Array.isArray(data)) {
+                for (const recipe of data) {
+                    if (!recipe.hasOwnProperty('title') || !recipe.hasOwnProperty('ID')) {
+                        console.error('API response does not contain expected properties.');
+                        return;
+                    }
+                }
+                console.log('API response is as expected.');
+            } else {
+                console.error('API response is not an array.');
+            }
         })
         .catch(error => console.error('Error:', error));
-});
+}
 
-document.addEventListener('DOMContentLoaded', function () {
+// Вызываем функцию для проверки API при загрузке страницы
+document.addEventListener('DOMContentLoaded', checkAPI);
+
+
+
+// Другие функции и обработчики остаются неизменными.
+
+document.addEventListener('DOMContentLoaded', function () 
+    {
+        fetch('/api/recipes')
+            .then(response => response.json())
+            .then(recipes => {
+                const selectElement = document.getElementById('recipe-select');
+                recipes.forEach(recipe => {
+                    const option = new Option(recipe.title, recipe.ID);
+                    selectElement.add(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
     fetchRecipes();
     attachEventListeners();
     populateRecipeDropdown();
@@ -33,7 +63,7 @@ function attachEventListeners() {
     }
 
     const newForm = document.getElementById('new-form');
-    const updateForm = document.getElementById('update-form');
+    
     const deleteForm = document.getElementById('delete-form');
     document.getElementById('delete-form').addEventListener('submit', function(event) {
         event.preventDefault();
@@ -45,12 +75,7 @@ function attachEventListeners() {
     if (newForm) {
         newForm.addEventListener('submit', handleNewRecipeSubmit);
     }
-    if (updateForm) {
-        updateForm.addEventListener('submit', handleFormSubmitWithFetch('/api/recipes/update', 'POST'));
-    }
-    if (deleteForm) {
-        deleteForm.addEventListener('submit', handleFormSubmitWithFetch('/api/recipes/delete', 'POST'));
-    }
+  
 }
 document.getElementById('searchForm').addEventListener('submit', function(event) {
     event.preventDefault();
@@ -170,60 +195,41 @@ function handleRecipeListClick(event) {
             })
             .catch(error => console.error('Error:', error));
     }
-    function filterRecipes(status) {
-        var recipeListContainer = document.getElementById("recipeList");
-        let url = `/api/${status}`;
-        console.log("Fetching recipes with status:", status, "from", url); // Debugging line
     
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(recipes => {
-                console.log("Recipes received:", recipes); // Debugging line
-                recipeListContainer.innerHTML = '';
-                recipes.forEach(recipe => {
-                    var recipeElement = document.createElement('div');
-                    recipeElement.innerHTML = createRecipeHtml(recipe);
-                    recipeListContainer.appendChild(recipeElement);
-                });
-            })
-            .catch(error => console.error('Error:', error));
-    }
     
-    function navigateToStatusPage(status) {
-        // Construct the URL for the status-specific page
-        const url = `/${status}`;
-    
-        // Navigate to the new URL
-        window.location.href = url;
-    }
-    // Handle click events to display recipe details
-    function showRecipeDetails(recipeID) {
-        fetch(`/api/recipes/${recipeID}`)
-            .then(response => response.json())
-            .then(recipe => {
-                const recipeDetailsContainer = document.getElementById('recipeDetailsContainer');
-                const titleElement = document.getElementById('recipeTitle');
-                const ingredientsElement = document.getElementById('recipeIngredients');
-                const instructionsElement = document.getElementById('recipeInstructions');
-                const statusElement = document.getElementById('recipeStatus');
-                const idElement = document.getElementById('recipeID');
+// Get the editForm element and the current recipe ID to edit
+const editForm = document.querySelector('#form-update-recipe')
+const recipeToEdit = editForm && editForm.dataset.recipeid
 
-                titleElement.textContent = recipe.title;
-                ingredientsElement.textContent = `Ingredients: ${recipe.ingredients}`;
-                instructionsElement.textContent = `Instructions: ${recipe.instructions}`;
-                statusElement.textContent = `Status: ${recipe.status}`;
-                idElement.textContent = recipe.id;
+// Add an event listener to listen for the form submit
+editForm && editForm.addEventListener('submit', (event) => {
+    // Prevent the default behaviour of the form element
+    event.preventDefault()
 
-                // Show the details container
-                recipeDetailsContainer.style.display = 'block';
-            })
-            .catch(error => console.error('Error fetching recipe details:', error));
-    }
+    // Convert form data into a JavaScript object
+    const formData = Object.fromEntries(new FormData(editForm));
+
+    return fetch(`/recipe/${recipeToEdit}`, {
+        // Use the PATCH method, or you might be using PUT, depending on your API
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        // Convert the form's Object data into JSON
+        body: JSON.stringify(formData),
+    })
+    .then((response) => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        // Redirect to the updated recipe's detail view, or handle according to your app's logic
+        document.location.href = `/recipe/${recipeToEdit}`;
+    })
+    .catch((error) => {
+        console.error('There has been a problem with your fetch operation:', error);
+        // Handle errors here, such as displaying a message to the user
+    });
+});
 
     // Function to update recipe status
  // Update recipe status function
@@ -279,35 +285,67 @@ function deleteRecipe(recipeID) {
         })
         .catch(error => console.error('Error:', error));
 }
-
-
-    // Function to update the recipe list on the page
-    function updateRecipeList(recipes) {
-        const recipeListContainer = document.getElementById('recipeList');
-        recipeListContainer.innerHTML = '';
-
-        if (recipes.length > 0) {
-            recipes.forEach(recipe => {
-                const recipeDiv = document.createElement('div');
-                const recipeID = recipe.ID;
-
-                recipeDiv.innerHTML = `
-                    <p onclick="showRecipeDetails('${recipeID}')" style="cursor: pointer;">
-                        ${recipe.title} by ${recipe.ingredients}: ${recipe.status}
-                    </p>
-                    <button class="mark-as-button" data-recipeid="${recipeID}" data-status="cooking">Cooking</button>
-                    <button class="mark-as-button" data-recipeid="${recipeID}" data-status="tried">Tried</button>
-                    <button class="mark-as-button" data-recipeid="${recipeID}" data-status="not-tried">Not Tried</button>
-                    <button class="mark-as-button" data-recipeid="${recipeID}" data-status="to-cook">To Cook</button>
-                    <button class="delete-button" data-recipeid="${recipeID}">Delete</button>
-                `;
-
-                recipeListContainer.appendChild(recipeDiv);
-            });
-        } else {
-            recipeListContainer.innerHTML = '<p>No recipes found.</p>';
-        }
+function handleRecipeListClick(event) {
+    const target = event.target;
+    if (target.classList.contains('delete-button')) {
+        const recipeID = target.getAttribute('data-recipeid');
+        deleteRecipe(recipeID);
+    } else if (target.classList.contains('mark-as-button')) {
+        const recipeID = target.getAttribute('data-recipeid');
+        const status = target.getAttribute('data-status');
+        updateRecipeStatus(recipeID, status);
+    } else if (target.tagName === 'P') {
+        const recipeID = target.getAttribute('data-recipeid');
+        showRecipeDetails(recipeID);
     }
+}
+
+function handleDeleteRecipeSubmit(event) {
+    event.preventDefault();
+    const recipeID = document.getElementById('recipe-select').value;
+    deleteRecipe(recipeID);
+}
+
+function handleSearchFormSubmit(event) {
+    event.preventDefault();
+    const query = document.getElementById('searchInput').value;
+    const searchType = document.getElementById('searchType').value;
+    redirectToSearchResults(query, searchType);
+}
+
+function updateRecipeList(recipes) {
+    const recipeListContainer = document.getElementById('recipeList');
+    recipeListContainer.innerHTML = '';
+
+    if (recipes.length > 0) {
+        recipes.forEach(recipe => {
+            const recipeDiv = document.createElement('div');
+            const recipeID = recipe.ID;
+
+            recipeDiv.innerHTML = `
+                <p data-recipeid="${recipeID}" style="cursor: pointer;">
+                    ${recipe.title} by ${recipe.ingredients}: ${recipe.status}
+                </p>
+                <button class="mark-as-button" data-recipeid="${recipeID}" data-status="cooking">Cooking</button>
+                <button class="mark-as-button" data-recipeid="${recipeID}" data-status="tried">Tried</button>
+                <button class="mark-as-button" data-recipeid="${recipeID}" data-status="not-tried">Not Tried</button>
+                <button class="mark-as-button" data-recipeid="${recipeID}" data-status="to-cook">To Cook</button>
+                <button class="delete-button" data-recipeid="${recipeID}">Delete</button>
+            `;
+
+            recipeListContainer.appendChild(recipeDiv);
+        });
+    } else {
+        recipeListContainer.innerHTML = '<p>No recipes found.</p>';
+    }
+}
+
+function showRecipeDetails(recipeID) {
+    // Реализуйте логику для показа деталей рецепта.
+    // Например, перенаправление на страницу с детальной информацией о рецепте:
+    window.location.href = `/api/recipes/${recipeID}`;
+}
+
     
     const newForm = document.getElementById('new-form');
 

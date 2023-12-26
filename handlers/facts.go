@@ -22,13 +22,40 @@ func GetAllRecipes(c *fiber.Ctx) error {
 
 // GetRecipeDetails retrieves details of a specific recipe by ID
 func GetRecipeDetails(c *fiber.Ctx) error {
-	recipeID := c.Params("recipeID")
 	var recipe models.Recipe
-	result := database.DB.Db.First(&recipe, recipeID)
+	recipeID := c.Params("recipeID")
+
+	result := database.DB.Db.Where("id = ?", recipeID).First(&recipe)
 	if result.Error != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
+
+		return c.Render("error", fiber.Map{
+			"Title": "Recipe Not Found",
+			"Error": "The requested recipe does not exist or might have been deleted.",
+		})
 	}
-	return c.JSON(recipe)
+
+	return c.Render("show", fiber.Map{
+		"Title":  "Recipe Details",
+		"Recipe": recipe,
+	})
+}
+func EditRecipe(c *fiber.Ctx) error {
+	var recipe models.Recipe
+	recipeID := c.Params("recipeID")
+
+	result := database.DB.Db.Where("id = ?", recipeID).First(&recipe)
+	if result.Error != nil {
+		return c.Render("error", fiber.Map{
+			"Title": "Recipe Not Found",
+			"Error": "The requested recipe does not exist or might have been deleted.",
+		})
+	}
+
+	return c.Render("edit", fiber.Map{
+		"Title":    "Edit Recipe",
+		"Subtitle": "Edit your recipe details",
+		"Recipe":   recipe,
+	})
 }
 
 // NewRecipeView renders the page to add a new recipe
@@ -49,21 +76,24 @@ func AddNewRecipe(c *fiber.Ctx) error {
 	return ConfirmationView(c, "Recipe added successfully", "You can add more recipes to your collection")
 }
 
-// UpdateRecipe updates an existing recipe's details
 func UpdateRecipeDetails(c *fiber.Ctx) error {
-	recipeID := c.Params("recipeID ")
-	var updatedRecipe models.Recipe
-	if err := c.BodyParser(&updatedRecipe); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+	updatedRecipe := new(models.Recipe)
+	recipeID := c.Params("recipeID")
+
+	// Parsing the request body
+	if err := c.BodyParser(updatedRecipe); err != nil {
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err.Error())
 	}
 
-	result := database.DB.Db.Model(&models.Recipe{}).Where("id = ?", recipeID).Updates(&updatedRecipe)
-	if result.Error != nil || result.RowsAffected == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
+	// Write updated values to the database
+	result := database.DB.Db.Model(updatedRecipe).Where("id = ?", recipeID).Updates(updatedRecipe)
+	if result.Error != nil {
+		// If there's an error updating the recipe, redirect to the edit recipe view
+		return EditRecipe(c)
 	}
 
-	c.SendStatus(fiber.StatusNoContent)
-	return c.JSON(updatedRecipe)
+	// If the update is successful, redirect to the show recipe view
+	return GetRecipeDetails(c)
 }
 
 // DeleteRecipe removes a recipe from the database
@@ -268,4 +298,7 @@ func GetRecipesByStatus(c *fiber.Ctx, status string) error {
 	}
 
 	return c.JSON(recipes)
+}
+func NotFound(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusNotFound).SendFile("./public/404.html")
 }

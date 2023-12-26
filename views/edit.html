@@ -1,0 +1,24 @@
+<div class="container">
+    <form id="form-update-recipe" data-recipeid="{{ .Recipe.ID }}">
+        <!-- Title field -->
+        <label for="title">
+            <span>Title</span>
+            <input type="text" name="title" id="title" value="{{ .Recipe.Title }}">
+        </label>
+
+        <!-- Ingredients field -->
+        <label for="ingredients">
+            <span>Ingredients</span>
+            <textarea name="ingredients" id="ingredients">{{ .Recipe.Ingredients }}</textarea>
+        </label>
+
+        <!-- Instructions field -->
+        <label for="instructions">
+            <span>Instructions</span>
+            <textarea name="instructions" id="instructions">{{ .Recipe.Instructions }}</textarea>
+        </label>
+
+        
+        <input type="submit" value="Update Recipe">
+    </form>
+</div>

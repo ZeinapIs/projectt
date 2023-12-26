@@ -1,54 +1,30 @@
 <!-- views/index.html -->
-
-<link rel="stylesheet" type="text/css" href="style/main.css"> <!-- Include your CSS file -->
-
 <script src="javascript/app.js"></script>
-<form id="searchForm">
-    <input type="text" id="searchInput" placeholder="Search for recipes...">
-    <select id="searchType">
-        <option value="title">By Title</option>
-        <option value="ingr">By Ingredient</option>
-        <option value="instr">By Instruction</option>
-    </select>
-    <button type="submit">Search</button>
-</form>
-<div id="searchResults"></div> <!-- Container for search results -->
-
 <div>
-    <a href="/cooking" class="filter-link">Cooking</a>
-    <a href="/to-cook" class="filter-link">To Cook</a>
-    <a href="/tried" class="filter-link">Tried</a>
-    <a href="/not-tried" class="filter-link">Not Tried</a>
-</div>
-<div id="recipeList" class="recipe-list">
-    <!-- Recipes will be loaded here -->
-</div>
-<!-- Replace the button with a link -->
-<a href="/delete-recipe" class="delete-link">Delete a Recipe</a>
-
-<div id="recipeList">
-    {{ if .Recipes }}
-    {{ range .Recipes }}
-        <div class="recipe-list-container" data-recipe-id="{{ .ID }}">
-            <!-- Recipe details -->
-            <h3>{{ .Title }}</h3>
-            <p>Ingredients: {{ .Ingredients }}</p>
-            <p>Instructions: {{ .Instructions }}</p>
-            <p>Status: {{ .Status }}</p>
-            <!-- Action links -->
-            <a href="#" class="update-recipe-link" data-recipe-id="{{ .ID }}" data-status="cooking">Cooking</a>
-            <a href="#" class="update-recipe-link" data-recipe-id="{{ .ID }}" data-status="tried">Tried</a>
-            <a href="#" class="update-recipe-link" data-recipe-id="{{ .ID }}" data-status="not-tried">Not Tried</a>
-            <a href="#" class="update-recipe-link" data-recipe-id="{{ .ID }}" data-status="to-cook">To Cook</a>
-            <!-- New delete and update buttons -->
-        
-            <button class="update-button" data-recipeid="{{ .ID }}">Update</button>
-        </div>
-    {{ end }}
-    {{ else }}
+    <!-- Filter links -->
     <div>
-        <p>No recipes yet.</p>
-        <p><a href="/recipe">Add new</a></p>
+        <a href="/cooking" class="filter-link">Cooking</a>
+        <a href="/to-cook" class="filter-link">To Cook</a>
+        <a href="/tried" class="filter-link">Tried</a>
+        <a href="/not-tried" class="filter-link">Not Tried</a>
     </div>
-    {{ end }}
+
+    <!-- Recipe list -->
+    <div id="recipeList">
+        {{ if .Recipes }}
+        {{ range .Recipes }}
+            <div class="recipe-list-container" data-recipe-id="{{ .ID }}">
+                <!-- Make recipe title a clickable link -->
+                <a href="/recipe/{{ .ID }}" class="recipe-link">
+                    <h3>{{ .Title }}</h3>
+                </a>
+                <p>Status: {{ .Status }}</p>
+            </div>
+        {{ end }}
+        {{ else }}
+            <p>No recipes yet.</p>
+            <p><a href="/recipe">Add new</a></p>
+        </div>
+        {{ end }}
+    </div>
 </div>
