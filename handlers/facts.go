@@ -102,14 +102,10 @@ func DeleteRecipe(c *fiber.Ctx) error {
 
 	result := database.DB.Db.Delete(&models.Recipe{}, recipeID)
 	if result.Error != nil {
-		return NotFound(c) // Ensure you have a NotFound handler defined
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": result.Error.Error()})
 	}
 
-	if result.RowsAffected == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
-	}
-
-	return GetAllRecipes(c) // Redirect to a function that lists all recipes
+	return c.JSON(fiber.Map{"message": "Recipe deleted successfully"})
 }
 
 // MarkAsCooking updates the status of a recipe to 'cooking'

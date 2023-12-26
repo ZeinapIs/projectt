@@ -32,7 +32,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/recipe/:recipeID/edit", handlers.EditRecipe)
 
 	app.Patch("/recipe/:recipeID", handlers.UpdateRecipe)
-	app.Delete("recipe/delete/:recipeID", handlers.DeleteRecipe)
+	app.Delete("/recipe/:recipeID", handlers.DeleteRecipe)
 
 	app.Get("/recipe", handlers.NewRecipeView)
 	app.Get("/api/recipes", handlers.GetAllRecipesAsJSON)

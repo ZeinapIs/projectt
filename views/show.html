@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="/style/main.css?v=1">
-
+<script src="javascript/app.js"></script>
 <div class="container flex">
     {{ if .Recipe }}
     
@@ -12,7 +12,28 @@
     
     <div class="actions">
         <a href="/recipe/{{.Recipe.ID }}/edit" class="btn-secondary">Edit</a>
-        <button id="delete-button" data-recipeid="{{ .Recipe.ID }}" class="btn-danger">Delete</button>
+        <button id="deleteRecipeButton" data-recipeid="{{ .Recipe.ID }}" class="btn-danger">Delete</button>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const deleteButton = document.getElementById('deleteRecipeButton');
+                if (deleteButton) {
+                    deleteButton.addEventListener('click', function() {
+                        const recipeId = this.dataset.recipeid;
+                        if (confirm("Are you sure you want to delete this recipe?")) {
+                            fetch(`/recipe/${recipeId}`, { method: 'DELETE' })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Error in deletion');
+                                    }
+                                    window.location.href = '/';
+                                })
+                                .catch(error => console.error('Deletion failed:', error));
+                        }
+                    });
+                }
+            });
+            </script>
+            
     </div>
 
     {{ else }}
