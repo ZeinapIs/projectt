@@ -29,15 +29,11 @@ func SetupRoutes(app *fiber.App) {
 
 	app.Get("/api/recipes/title/:partialTitle", handlers.SearchRecipesByTitle)
 	app.Get("/api/recipes/search/:searchTerm", handlers.SearchRecipes)
-	app.Get("/recipe/:id/edit", handlers.EditRecipe)
+	app.Get("/recipe/:recipeID/edit", handlers.EditRecipe)
 
-	app.Patch("/recipe/:recipeID", handlers.UpdateRecipeDetails)
-	app.Delete("/api/recipes/:recipeID", handlers.DeleteRecipe)
+	app.Patch("/recipe/:recipeID", handlers.UpdateRecipe)
+	app.Delete("recipe/delete/:recipeID", handlers.DeleteRecipe)
 
-	app.Get("/delete-recipe", func(c *fiber.Ctx) error {
-		// Render the delete page
-		return c.Render("delete", fiber.Map{})
-	})
 	app.Get("/recipe", handlers.NewRecipeView)
 	app.Get("/api/recipes", handlers.GetAllRecipesAsJSON)
 

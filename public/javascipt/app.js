@@ -64,7 +64,7 @@ function attachEventListeners() {
 
     const newForm = document.getElementById('new-form');
     
-    const deleteForm = document.getElementById('delete-form');
+
     document.getElementById('delete-form').addEventListener('submit', function(event) {
         event.preventDefault();
         const recipeID = document.getElementById('recipe-id').value;
@@ -77,86 +77,28 @@ function attachEventListeners() {
     }
   
 }
-document.getElementById('searchForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const query = document.getElementById('searchInput').value;
-    const searchType = document.getElementById('searchType').value;
-    redirectToSearchResults(query, searchType);
-});
+// Get deleteButton element and the current fact ID to delete
+const deleteButton = document.querySelector('#delete-button')
+const recipeToDelete = deleteButton && deleteButton.dataset.recipeid
 
-function redirectToSearchResults(query, searchType) {
-    let url;
-    switch(searchType) {
-        case 'title':
-            url = `/api/recipes/title/${encodeURIComponent(query)}`;
-            break;
-        case 'ingr':
-            url = `/api/recipes/ingr/${encodeURIComponent(query)}`;
-            break;
-        case 'instr':
-            url = `/api/recipes/instr/${encodeURIComponent(query)}`;
-            break;
-        default:
-            console.error('Unknown search type');
-            return;
-    }
-    window.location.href = url; // Перенаправление на новый URL
-}
+// Add event listener to listen for button click
+deleteButton && deleteButton.addEventListener('click', () => {
+	// We ask the user if they are sure they want to delete the fact
+    const result = confirm("Are you sure you want to delete this recipe?")
+    
+	// If the user cancels the prompt, we exit here
+    if (!result) return
+
+    // If the user confirms that they want to delete, we send a DELETE request
+    // URL uses the current fact's ID
+    // Lastly, we redirect to index
+    return fetch(`/recipe/${recipeToDelete}`, { method: 'DELETE' })
+            .then(() => document.location.href="/")
+})
 
 
 
-function searchRecipes(query, searchType) {
-    let url;
-    switch(searchType) {
-        case 'title':
-            url = `/api/recipes/title/${encodeURIComponent(query)}`;
-            break;
-        case 'ingr':
-            url = `/api/recipes/ingr/${encodeURIComponent(query)}`;
-            break;
-        case 'instr':
-            url = `/api/recipes/instr/${encodeURIComponent(query)}`;
-            break;
-        default:
-            console.error('Unknown search type');
-            return;
-    }
 
-    fetch(url)
-        .then(response => response.json())
-        .then(recipes => {
-            displaySearchResults(recipes);
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function displaySearchResults(recipes) {
-    const resultsContainer = document.getElementById('searchResults');
-    resultsContainer.innerHTML = ''; 
-
-    if (recipes.length === 0) {
-        resultsContainer.innerHTML = '<p>No recipes found.</p>';
-        return;
-    }
-
-    recipes.forEach(recipe => {
-        const recipeElement = document.createElement('div');
-        recipeElement.textContent = recipe.title;
-        resultsContainer.appendChild(recipeElement);
-    });
-}
-
-function handleRecipeListClick(event) {
-    if (event.target.matches('.delete-button')) {
-        const recipeID = event.target.dataset.recipeid;
-        deleteRecipe(recipeID);
-    }
-    if (event.target.matches('.mark-as-button')) {
-        const recipeID = event.target.dataset.recipeid;
-        const status = event.target.dataset.status;
-        updateRecipeStatus(recipeID, status);
-    }
-}
     function fetchRecipes() {
         // Fetch the initial HTML content
         fetch('/')
@@ -198,19 +140,19 @@ function handleRecipeListClick(event) {
     
     
 // Get the editForm element and the current recipe ID to edit
-const editForm = document.querySelector('#form-update-recipe')
-const recipeToEdit = editForm && editForm.dataset.recipeid
+const editForm = document.querySelector('#form-update-recipe');
+const recipeToEdit = editForm && editForm.dataset.recipeid;
 
 // Add an event listener to listen for the form submit
 editForm && editForm.addEventListener('submit', (event) => {
     // Prevent the default behaviour of the form element
-    event.preventDefault()
+    event.preventDefault();
 
     // Convert form data into a JavaScript object
     const formData = Object.fromEntries(new FormData(editForm));
 
     return fetch(`/recipe/${recipeToEdit}`, {
-        // Use the PATCH method, or you might be using PUT, depending on your API
+        // Use the PATCH or PUT method, depending on your API
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json'
@@ -218,7 +160,7 @@ editForm && editForm.addEventListener('submit', (event) => {
         // Convert the form's Object data into JSON
         body: JSON.stringify(formData),
     })
-    .then((response) => {
+    .then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -231,21 +173,9 @@ editForm && editForm.addEventListener('submit', (event) => {
     });
 });
 
-    // Function to update recipe status
- // Update recipe status function
-function updateRecipeStatus(recipeID, newStatus) {
-    // Assuming you're sending a POST request to update the status
-    // This might vary depending on your API implementation
-    fetch(`/api/recipes/${recipeID}/${newStatus}`, { method: 'POST' })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            console.log(`Recipe status updated to ${newStatus}`);
-            // Here you might want to update the UI accordingly
-        })
-        .catch(error => console.error('Error:', error));
-}
+    
+
+ 
 
 function populateRecipeDropdown() {
     fetch('/api/recipes/titles')
@@ -340,11 +270,6 @@ function updateRecipeList(recipes) {
     }
 }
 
-function showRecipeDetails(recipeID) {
-    // Реализуйте логику для показа деталей рецепта.
-    // Например, перенаправление на страницу с детальной информацией о рецепте:
-    window.location.href = `/api/recipes/${recipeID}`;
-}
 
     
     const newForm = document.getElementById('new-form');

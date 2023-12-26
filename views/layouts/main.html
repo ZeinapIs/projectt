@@ -7,7 +7,7 @@
     <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.7/dist/handlebars.min.js"></script>
-    <script src="/javascript/app.js"></script>
+   
 </head>
 <body>
     <div class="wrapper">
@@ -21,3 +21,13 @@
     </div>  
 </body>
 </html>
+<script id="main" src="/javascript/app.js"></script>
+
+<!-- For local development only: Snippet to append timestamps -->
+<script>
+    const timeStamp = Date.now()
+    const stylesheetLink = document.querySelector("link#styles")
+    const appScriptLink = document.querySelector("script#main")
+    stylesheetLink.href += `?t=${timeStamp}`
+    appScriptLink.src += `?t=${timeStamp}`
+</script>

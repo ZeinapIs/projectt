@@ -76,17 +76,17 @@ func AddNewRecipe(c *fiber.Ctx) error {
 	return ConfirmationView(c, "Recipe added successfully", "You can add more recipes to your collection")
 }
 
-func UpdateRecipeDetails(c *fiber.Ctx) error {
-	updatedRecipe := new(models.Recipe)
-	recipeID := c.Params("recipeID")
+func UpdateRecipe(c *fiber.Ctx) error {
+	recipe := new(models.Recipe)
+	recipeID := c.Params("recipeID") // Make sure 'recipeID' matches the parameter name in your route
 
 	// Parsing the request body
-	if err := c.BodyParser(updatedRecipe); err != nil {
+	if err := c.BodyParser(recipe); err != nil {
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err.Error())
 	}
 
 	// Write updated values to the database
-	result := database.DB.Db.Model(updatedRecipe).Where("id = ?", recipeID).Updates(updatedRecipe)
+	result := database.DB.Db.Model(&recipe).Where("id = ?", recipeID).Updates(recipe)
 	if result.Error != nil {
 		// If there's an error updating the recipe, redirect to the edit recipe view
 		return EditRecipe(c)
@@ -99,15 +99,17 @@ func UpdateRecipeDetails(c *fiber.Ctx) error {
 // DeleteRecipe removes a recipe from the database
 func DeleteRecipe(c *fiber.Ctx) error {
 	recipeID := c.Params("recipeID")
+
 	result := database.DB.Db.Delete(&models.Recipe{}, recipeID)
-	if result.Error != nil || result.RowsAffected == 0 {
+	if result.Error != nil {
+		return NotFound(c) // Ensure you have a NotFound handler defined
+	}
+
+	if result.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Recipe not found"})
 	}
 
-	// Customize the confirmation message for book deletion
-	title := "Recipe deleted successfully"
-	subtitle := "You can manage your collection"
-	return ConfirmationView(c, title, subtitle)
+	return GetAllRecipes(c) // Redirect to a function that lists all recipes
 }
 
 // MarkAsCooking updates the status of a recipe to 'cooking'
